@@ -16,8 +16,9 @@ def check_signals():
         df.dropna(inplace=True)
 
         last = df.iloc[-1]
-        high_20d = df["High"].rolling(window=78*20).max().iloc[-1]
-        low_20d = df["Low"].rolling(window=78*20).min().iloc[-1]
+        # חישובי מגמות עם ערך מספרי אמיתי
+        high_20d = df["High"].rolling(window=78*20).max().iloc[-1].item()
+        low_20d = df["Low"].rolling(window=78*20).min().iloc[-1].item()
         df['date'] = df.index.date
         yesterday = df[df['date'] < df['date'].max()]
         high_yesterday = yesterday[yesterday['date'] == yesterday['date'].max()].High.max()
