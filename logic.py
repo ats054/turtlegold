@@ -7,12 +7,15 @@ bot = Bot(token=TELEGRAM_TOKEN)
 
 import asyncio
 
+import asyncio
+
 def send_alert(msg):
-    loop = asyncio.get_event_loop()
-    if loop.is_running():
-        asyncio.ensure_future(bot.send_message(chat_id=TELEGRAM_ID, text=msg))
-    else:
-        loop.run_until_complete(bot.send_message(chat_id=TELEGRAM_ID, text=msg))
+    try:
+        asyncio.run(bot.send_message(chat_id=TELEGRAM_ID, text=msg))
+    except RuntimeError:
+        # אם כבר יש לולאה, נ fallback לפתרון שמרני
+        loop = asyncio.get_event_loop()
+        loop.create_task(bot.send_message(chat_id=TELEGRAM_ID, text=msg))
 
 def check_signals():
     try:
