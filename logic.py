@@ -2,32 +2,27 @@ import yfinance as yf
 import pandas as pd
 from telegram import Bot
 from config import TELEGRAM_ID, TELEGRAM_TOKEN
+import asyncio
 
 bot = Bot(token=TELEGRAM_TOKEN)
-
-import asyncio
-
-import asyncio
 
 def send_alert(msg):
     try:
         asyncio.run(bot.send_message(chat_id=TELEGRAM_ID, text=msg))
     except RuntimeError:
-        # אם כבר יש לולאה, נ fallback לפתרון שמרני
         loop = asyncio.get_event_loop()
         loop.create_task(bot.send_message(chat_id=TELEGRAM_ID, text=msg))
 
 def check_signals():
     try:
-        
         df = yf.download("GC=F", period="30d", interval="5m", progress=False)
         if df.empty:
             return "⚠️ לא ניתן לטעון נתונים מהשרת (Yahoo Finance)"
         df.dropna(inplace=True)
 
         last = df.iloc[-1]
-        
-        # חישובי מגמות עם ערכים מספריים
+
+        # מגמות
         high_20d = float(df["High"].rolling(window=78*20).max().iloc[-1])
         low_20d = float(df["Low"].rolling(window=78*20).min().iloc[-1])
 
@@ -43,7 +38,8 @@ def check_signals():
         current_price = float(last["Close"])
         plus500_price = current_price - 26.5
 
-                reason = None
+        # תנאים לאיתות
+        reason = None
         if current_price > high_20d:
             reason = "שבירת שיא 20 ימים"
         elif current_price < low_20d:
@@ -56,7 +52,8 @@ def check_signals():
             reason = "שבירת הגבוה של 4 שעות אחרונות"
         elif current_price < low_4h:
             reason = "שבירת השפל של 4 שעות אחרונות"
-        
+
+        # שליחה רק אם יש סיבה אמיתית
         if reason:
             msg = f"""📢 איתות זהב לפי שיטת הצבים
 
