@@ -16,8 +16,8 @@ def send_alert(msg):
 def check_signals():
     try:
         df = yf.download("GC=F", period="30d", interval="5m", progress=False)
-        if df.empty:
-            return "⚠️ לא ניתן לטעון נתונים מהשרת (Yahoo Finance)"
+        if df.empty or len(df) < 2:
+            return "⚠️ לא מספיק נתונים לבדיקה (Yahoo Finance)"
         df.dropna(inplace=True)
 
         last = df.iloc[-1]
@@ -41,7 +41,7 @@ def check_signals():
 
         reason = None
 
-        # איתותי שיטת הצבים
+        # שיטת הצבים
         if current_price > high_20d:
             reason = "שבירת שיא 20 ימים"
         elif current_price < low_20d:
@@ -55,11 +55,15 @@ def check_signals():
         elif current_price < low_4h:
             reason = "שבירת השפל של 4 שעות אחרונות"
 
-        # שיטת נרות - איתותים פשוטים
-        elif last["Close"] > last["Open"] and (last["Close"] - last["Open"]) > (last["High"] - last["Low"]) * 0.6:
-            reason = "📊 נר שורי חזק (Bullish Candle)"
-        elif last["Close"] < last["Open"] and (last["Open"] - last["Close"]) > (last["High"] - last["Low"]) * 0.6:
-            reason = "📊 נר דובי חזק (Bearish Candle)"
+        # שיטת נרות פשוטה
+        body = abs(last["Close"] - last["Open"])
+        candle_range = last["High"] - last["Low"]
+
+        if candle_range > 0:
+            if last["Close"] > last["Open"] and body > candle_range * 0.6:
+                reason = "📊 נר שורי חזק (Bullish Candle)"
+            elif last["Close"] < last["Open"] and body > candle_range * 0.6:
+                reason = "📊 נר דובי חזק (Bearish Candle)"
 
         if reason:
             msg = f"""📢 איתות זהב לפי ניתוח יומי
