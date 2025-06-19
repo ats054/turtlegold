@@ -5,8 +5,14 @@ from config import TELEGRAM_ID, TELEGRAM_TOKEN
 
 bot = Bot(token=TELEGRAM_TOKEN)
 
+import asyncio
+
 def send_alert(msg):
-    bot.send_message(chat_id=TELEGRAM_ID, text=msg)
+    loop = asyncio.get_event_loop()
+    if loop.is_running():
+        asyncio.ensure_future(bot.send_message(chat_id=TELEGRAM_ID, text=msg))
+    else:
+        loop.run_until_complete(bot.send_message(chat_id=TELEGRAM_ID, text=msg))
 
 def check_signals():
     try:
