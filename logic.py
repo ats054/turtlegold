@@ -16,28 +16,31 @@ def send_alert(msg):
 def check_signals():
     try:
         df = yf.download("GC=F", period="30d", interval="5m", progress=False)
-        if df.empty or len(df) < 2:
-            return "⚠️ לא מספיק נתונים לבדיקה (Yahoo Finance)"
+        if df.empty:
+            return "⚠️ לא ניתן לטעון נתונים מהשרת (Yahoo Finance)"
         df.dropna(inplace=True)
 
         last = df.iloc[-1]
         prev = df.iloc[-2]
 
         # מגמות
-        high_20d = float(df["High"].rolling(window=78*20).max().iloc[-1])
-        low_20d = float(df["Low"].rolling(window=78*20).min().iloc[-1])
+        high_20d = df["High"].rolling(window=78*20).max().iloc[-1].item()
+        low_20d = df["Low"].rolling(window=78*20).min().iloc[-1].item()
 
         df['date'] = df.index.date
         yesterday = df[df['date'] < df['date'].max()]
-        high_yesterday = float(yesterday[yesterday['date'] == yesterday['date'].max()].High.max())
-        low_yesterday = float(yesterday[yesterday['date'] == yesterday['date'].max()].Low.min())
+        high_yesterday = yesterday[yesterday['date'] == yesterday['date'].max()].High.max().item()
+        low_yesterday = yesterday[yesterday['date'] == yesterday['date'].max()].Low.min().item()
 
         last_4h = df.iloc[-48:]
-        high_4h = float(last_4h["High"].max())
-        low_4h = float(last_4h["Low"].min())
+        high_4h = last_4h["High"].max().item()
+        low_4h = last_4h["Low"].min().item()
 
-        current_price = float(last["Close"])
+        current_price = last["Close"].item()
         plus500_price = current_price - 26.5
+        open_price = last["Open"].item()
+        high_price = last["High"].item()
+        low_price = last["Low"].item()
 
         reason = None
 
@@ -55,15 +58,11 @@ def check_signals():
         elif current_price < low_4h:
             reason = "שבירת השפל של 4 שעות אחרונות"
 
-        # שיטת נרות פשוטה
-        body = abs(last["Close"] - last["Open"])
-        candle_range = last["High"] - last["Low"]
-
-        if candle_range > 0:
-            if last["Close"] > last["Open"] and body > candle_range * 0.6:
-                reason = "📊 נר שורי חזק (Bullish Candle)"
-            elif last["Close"] < last["Open"] and body > candle_range * 0.6:
-                reason = "📊 נר דובי חזק (Bearish Candle)"
+        # שיטת נרות
+        elif current_price > open_price and (current_price - open_price) > (high_price - low_price) * 0.6:
+            reason = "📊 נר שורי חזק (Bullish Candle)"
+        elif current_price < open_price and (open_price - current_price) > (high_price - low_price) * 0.6:
+            reason = "📊 נר דובי חזק (Bearish Candle)"
 
         if reason:
             msg = f"""📢 איתות זהב לפי ניתוח יומי
