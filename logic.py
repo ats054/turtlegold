@@ -33,20 +33,11 @@ def check_signals():
         current_price = float(last["Close"])
         plus500_price = current_price - 26.5
 
-        reason = None
-        if current_price > high_20d:
-            reason = "שבירת שיא 20 ימים"
-        elif current_price < low_20d:
-            reason = "שבירת שפל 20 ימים"
-        elif current_price > high_yesterday:
-            reason = "שבירת הגבוה של אתמול"
-        elif current_price < low_yesterday:
-            reason = "שבירת הנמוך של אתמול"
-        elif current_price > high_4h:
-            reason = "שבירת הגבוה של 4 שעות אחרונות"
-        elif current_price < low_4h:
-            reason = "שבירת השפל של 4 שעות אחרונות"
-
+                # בדיקת שליחה יזומה לבדיקה
+        if current_price > 1:
+            reason = "בדיקה – שליחת איתות טלגרם"
+        else:
+            reason = None
         if reason:
             msg = f"""📢 איתות זהב לפי שיטת הצבים
 
