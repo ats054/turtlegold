@@ -10,6 +10,7 @@ def send_alert(msg):
 
 def check_signals():
     try:
+        send_alert("✅ בדיקה – הבוט שלך מחובר!")
         df = yf.download("GC=F", period="30d", interval="5m", progress=False)
         if df.empty:
             return "⚠️ לא ניתן לטעון נתונים מהשרת (Yahoo Finance)"
