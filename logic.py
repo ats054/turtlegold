@@ -1,3 +1,4 @@
+
 import yfinance as yf
 import pandas as pd
 from telegram import Bot
@@ -21,6 +22,7 @@ def check_signals():
         df.dropna(inplace=True)
 
         last = df.iloc[-1]
+        prev = df.iloc[-2]
 
         # מגמות
         high_20d = float(df["High"].rolling(window=78*20).max().iloc[-1])
@@ -38,28 +40,44 @@ def check_signals():
         current_price = float(last["Close"])
         plus500_price = current_price - 26.5
 
-        # תנאים לאיתות
-        reason = None
-        if current_price > high_20d:
-            reason = "שבירת שיא 20 ימים"
-        elif current_price < low_20d:
-            reason = "שבירת שפל 20 ימים"
-        elif current_price > high_yesterday:
-            reason = "שבירת הגבוה של אתמול"
-        elif current_price < low_yesterday:
-            reason = "שבירת הנמוך של אתמול"
-        elif current_price > high_4h:
-            reason = "שבירת הגבוה של 4 שעות אחרונות"
-        elif current_price < low_4h:
-            reason = "שבירת השפל של 4 שעות אחרונות"
+        messages = []
 
-        # שליחה רק אם יש סיבה אמיתית
-        if reason:
-            msg = f"""📢 איתות זהב לפי שיטת הצבים
+        # שיטת הצבים
+        if current_price > high_20d:
+            messages.append("🐢 שבירת שיא 20 ימים")
+        elif current_price < low_20d:
+            messages.append("🐢 שבירת שפל 20 ימים")
+        elif current_price > high_yesterday:
+            messages.append("🐢 שבירת הגבוה של אתמול")
+        elif current_price < low_yesterday:
+            messages.append("🐢 שבירת הנמוך של אתמול")
+        elif current_price > high_4h:
+            messages.append("🐢 שבירת הגבוה של 4 שעות אחרונות")
+        elif current_price < low_4h:
+            messages.append("🐢 שבירת השפל של 4 שעות אחרונות")
+
+        # נר Hammer
+        body = abs(last["Close"] - last["Open"])
+        lower_shadow = last["Open"] - last["Low"] if last["Close"] > last["Open"] else last["Close"] - last["Low"]
+        if lower_shadow > body * 2 and last["Close"] > last["Open"]:
+            messages.append("🕯️ נר Hammer מזוהה")
+
+        # Bullish Engulfing
+        if (
+            prev["Close"] < prev["Open"] and
+            last["Close"] > last["Open"] and
+            last["Close"] > prev["Open"] and
+            last["Open"] < prev["Close"]
+        ):
+            messages.append("🕯️ נר Bullish Engulfing מזוהה")
+
+        if messages:
+            msg = f"""📢 איתות זהב אוטומטי
 
 📈 מחיר נוכחי: ${current_price:.2f}
 📉 מחיר בפלוס500: ${plus500_price:.2f}
-🔍 סיבה: {reason}
+🔍 סיבות:
+- {'\n- '.join(messages)}
 
 ⏱️ נבדק אוטומטית כל 5 דקות.
 """
