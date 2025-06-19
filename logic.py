@@ -10,24 +10,27 @@ def send_alert(msg):
 
 def check_signals():
     try:
-        df = yf.download("GC=F", period="30d", interval="5m")
+        df = yf.download("GC=F", period="30d", interval="5m", progress=False)
         if df.empty:
             return "⚠️ לא ניתן לטעון נתונים מהשרת (Yahoo Finance)"
         df.dropna(inplace=True)
 
         last = df.iloc[-1]
-        # חישובי מגמות עם ערך מספרי אמיתי
-        high_20d = df["High"].rolling(window=78*20).max().iloc[-1].item()
-        low_20d = df["Low"].rolling(window=78*20).min().iloc[-1].item()
+        
+        # חישובי מגמות עם ערכים מספריים
+        high_20d = float(df["High"].rolling(window=78*20).max().iloc[-1])
+        low_20d = float(df["Low"].rolling(window=78*20).min().iloc[-1])
+
         df['date'] = df.index.date
         yesterday = df[df['date'] < df['date'].max()]
-        high_yesterday = yesterday[yesterday['date'] == yesterday['date'].max()].High.max()
-        low_yesterday = yesterday[yesterday['date'] == yesterday['date'].max()].Low.min()
-        last_4h = df.iloc[-48:]
-        high_4h = last_4h["High"].max()
-        low_4h = last_4h["Low"].min()
+        high_yesterday = float(yesterday[yesterday['date'] == yesterday['date'].max()].High.max())
+        low_yesterday = float(yesterday[yesterday['date'] == yesterday['date'].max()].Low.min())
 
-        current_price = last["Close"]
+        last_4h = df.iloc[-48:]
+        high_4h = float(last_4h["High"].max())
+        low_4h = float(last_4h["Low"].min())
+
+        current_price = float(last["Close"])
         plus500_price = current_price - 26.5
 
         reason = None
@@ -45,15 +48,14 @@ def check_signals():
             reason = "שבירת השפל של 4 שעות אחרונות"
 
         if reason:
-            msg = f\"\"\"
-📢 איתות זהב לפי שיטת הצבים
+            msg = f"""📢 איתות זהב לפי שיטת הצבים
 
 📈 מחיר נוכחי: ${current_price:.2f}
 📉 מחיר בפלוס500: ${plus500_price:.2f}
 🔍 סיבה: {reason}
 
 ⏱️ נבדק אוטומטית כל 5 דקות.
-\"\"\"
+"""
             send_alert(msg)
             return msg
 
