@@ -66,9 +66,9 @@ def check_signals():
         elif low_price < low_4h:
             reason = "🔴 שבירת השפל של 4 שעות אחרונות"
         # שיטת נרות - עם high ו-low במקום close, וסינון תנודתיות > 0.8 דולר
-        elif high_price > open_price and (high_price - open_price) > (high_price - low_price) * 0.6 and (high_price - low_price) > 1.3:
+        elif high_price > open_price and (high_price - open_price) > (high_price - low_price) * 0.6 and (high_price - low_price) > 2.0:
          reason = "📊 🟢 נר שורי חזק (Bullish Candle)"
-        elif low_price < open_price and (open_price - low_price) > (high_price - low_price) * 0.6 and (high_price - low_price) > 1.3:
+        elif low_price < open_price and (open_price - low_price) > (high_price - low_price) * 0.6 and (high_price - low_price) > 2.0:
          reason = "📊 🔴 נר דובי חזק (Bearish Candle)"
         if reason:
             msg = f"""📢 איתות זהב לפי ניתוח יומי
