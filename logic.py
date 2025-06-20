@@ -6,12 +6,20 @@ import asyncio
 
 bot = Bot(token=TELEGRAM_TOKEN)
 
+async def async_send(msg):
+    await bot.send_message(chat_id=TELEGRAM_ID, text=msg)
+
 def send_alert(msg):
     try:
-        asyncio.run(bot.send_message(chat_id=TELEGRAM_ID, text=msg))
-    except RuntimeError:
         loop = asyncio.get_event_loop()
-        loop.create_task(bot.send_message(chat_id=TELEGRAM_ID, text=msg))
+        if loop.is_running():
+            asyncio.ensure_future(async_send(msg))
+        else:
+            loop.run_until_complete(async_send(msg))
+    except RuntimeError:
+        new_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(new_loop)
+        new_loop.run_until_complete(async_send(msg))
 
 def check_signals():
     try:
@@ -44,25 +52,25 @@ def check_signals():
 
         reason = None
 
-                # שיטת הצבים (מתוקן)
+        # שיטת הצבים (מתוקן)
         if high_price > high_20d:
-            reason = "🟢שבירת שיא 20 ימים"
+            reason = "🟢 שבירת שיא 20 ימים"
         elif low_price < low_20d:
-            reason = "🔴שבירת שפל 20 ימים"
+            reason = "🔴 שבירת שפל 20 ימים"
         elif high_price > high_yesterday:
-            reason = "🟢שבירת הגבוה של אתמול"
+            reason = "🟢 שבירת הגבוה של אתמול"
         elif low_price < low_yesterday:
-            reason = "🔴שבירת הנמוך של אתמול"
+            reason = "🔴 שבירת הנמוך של אתמול"
         elif high_price > high_4h:
-            reason = "🟢שבירת הגבוה של 4 שעות אחרונות"
+            reason = "🟢 שבירת הגבוה של 4 שעות אחרונות"
         elif low_price < low_4h:
-            reason = "🔴שבירת השפל של 4 שעות אחרונות"
+            reason = "🔴 שבירת השפל של 4 שעות אחרונות"
 
-                # שיטת נרות - עם high ו-low במקום close
+        # שיטת נרות - עם high ו-low במקום close
         elif high_price > open_price and (high_price - open_price) > (high_price - low_price) * 0.6:
-            reason = "📊 🟢נר שורי חזק (Bullish Candle)"
+            reason = "📊 🟢 נר שורי חזק (Bullish Candle)"
         elif low_price < open_price and (open_price - low_price) > (high_price - low_price) * 0.6:
-            reason = "📊 🔴נר דובי חזק (Bearish Candle)"
+            reason = "📊 🔴 נר דובי חזק (Bearish Candle)"
        
         if reason:
             msg = f"""📢 איתות זהב לפי ניתוח יומי
