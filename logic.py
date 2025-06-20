@@ -44,26 +44,25 @@ def check_signals():
 
         reason = None
 
-        # שיטת הצבים
-        if current_price > high_20d:
+                # שיטת הצבים (מתוקן)
+        if high_price > high_20d:
             reason = "שבירת שיא 20 ימים"
-        elif current_price < low_20d:
+        elif low_price < low_20d:
             reason = "שבירת שפל 20 ימים"
-        elif current_price > high_yesterday:
+        elif high_price > high_yesterday:
             reason = "שבירת הגבוה של אתמול"
-        elif current_price < low_yesterday:
+        elif low_price < low_yesterday:
             reason = "שבירת הנמוך של אתמול"
-        elif current_price > high_4h:
+        elif high_price > high_4h:
             reason = "שבירת הגבוה של 4 שעות אחרונות"
-        elif current_price < low_4h:
+        elif low_price < low_4h:
             reason = "שבירת השפל של 4 שעות אחרונות"
 
-        # שיטת נרות
-        elif current_price > open_price and (current_price - open_price) > (high_price - low_price) * 0.6:
-            reason = "📊 נר שורי חזק (Bullish Candle)"
-        elif current_price < open_price and (open_price - current_price) > (high_price - low_price) * 0.6:
-            reason = "📊 נר דובי חזק (Bearish Candle)"
-
+        #שיטת הנרות
+        elif high_price > open_price and (high_price - open_price) > (high_price - low_price) * 0.6:
+    reason = "📊 נר שורי חזק (Bullish Candle)"
+elif low_price < open_price and (open_price - low_price) > (high_price - low_price) * 0.6:
+    reason = "📊 נר דובי חזק (Bearish Candle)"
         if reason:
             msg = f"""📢 איתות זהב לפי ניתוח יומי
 
