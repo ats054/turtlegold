@@ -11,8 +11,12 @@ breakout_high = None
 breakout_low = None
 
 async def async_send(msg):
-    await bot.send_message(chat_id=TELEGRAM_ID, text=msg)
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+    keyboard = [[InlineKeyboardButton("🔁 רענן", url="https://turtlegold.onrender.com/ping")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await bot.send_message(chat_id=TELEGRAM_ID, text=msg, reply_markup=reply_markup)
 def send_alert(msg):
     try:
         loop = asyncio.get_event_loop()
