@@ -1,6 +1,6 @@
 import yfinance as yf
 import pandas as pd
-from telegram import Bot
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 from config import TELEGRAM_ID, TELEGRAM_TOKEN
 import asyncio
 
@@ -10,13 +10,13 @@ bot = Bot(token=TELEGRAM_TOKEN)
 breakout_high = None
 breakout_low = None
 
+# שליחה אסינכרונית עם כפתור רענון
 async def async_send(msg):
-    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
     keyboard = [[InlineKeyboardButton("🔁 רענן", url="https://turtlegold.onrender.com/ping")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
-
     await bot.send_message(chat_id=TELEGRAM_ID, text=msg, reply_markup=reply_markup)
+
+# שליחה בטוחה
 def send_alert(msg):
     try:
         loop = asyncio.get_event_loop()
@@ -60,7 +60,7 @@ def check_signals():
 
         reason = None
 
-        # שיטת הצבים (מתוקן)
+        # שיטת הצבים
         if high_price > high_20d:
             reason = "🟢 שבירת שיא 20 ימים"
         elif low_price < low_20d:
@@ -76,7 +76,7 @@ def check_signals():
         elif low_price < low_4h:
             reason = "🔴 שבירת השפל של 4 שעות אחרונות"
 
-        # שיטת נרות
+        # נר בוליש/ביריש
         elif high_price > open_price and (high_price - open_price) > 0.8 and (high_price - low_price) > 1.5:
             reason = "📊 🟢 נר שורי חזק (Bullish Candle)"
         elif low_price < open_price and (open_price - low_price) > 0.8 and (high_price - low_price) > 1.5:
