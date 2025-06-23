@@ -3,6 +3,8 @@ import pandas as pd
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 from config import TELEGRAM_ID, TELEGRAM_TOKEN
 import asyncio
+from datetime import datetime
+import pytz
 
 bot = Bot(token=TELEGRAM_TOKEN)
 
@@ -82,6 +84,30 @@ def check_signals():
         elif low_price < open_price and (open_price - low_price) > 1.1 and (high_price - low_price) > 1.9:
             reason = "📊 🔴 נר דובי חזק (Bearish Candle)"
 
+      # תורת הרבעים - זיהוי פריצה אמיתית או מלכודת
+        tz = pytz.timezone('Asia/Jerusalem')
+        now = datetime.now(tz)
+        hour = now.hour
+
+        if 9 <= hour < 12:
+            quarter = "רבע 1"
+        elif 12 <= hour < 16:
+            quarter = "רבע 2"
+        elif 16 <= hour < 20:
+            quarter = "רבע 3"
+        else:
+            quarter = "רבע 4"
+
+        # ניתוח תנאים לפריצה לפי הרבע
+        follow_through = (df.iloc[-1]["Close"] > df.iloc[-2]["Close"])
+        big_bull_candle = (high_price - low_price) > 1.5 and (high_price - open_price) > 0.8
+
+        if reason is None and quarter in ["רבע 2", "רבע 3"] and big_bull_candle and follow_through and high_price > high_yesterday:
+            reason = "🧠📈 פריצה אמיתית לפי תורת הרבעים (לונג)"
+        elif reason is None and high_price > high_yesterday:
+        if quarter in ["רבע 1", "רבע 4"] or not big_bull_candle or not follow_through:
+                reason = "⚠️ מלכודת פריצה שווא לפי תורת הרבעים"
+       
         if reason:
             msg = f"""📢 איתות זהב לפי ניתוח יומי
 
