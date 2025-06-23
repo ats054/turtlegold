@@ -77,9 +77,9 @@ def check_signals():
             reason = "🔴 שבירת השפל של 4 שעות אחרונות"
 
         # נר בוליש/ביריש
-        elif high_price > open_price and (high_price - open_price) > 0.8 and (high_price - low_price) > 1.5:
+        elif high_price > open_price and (high_price - open_price) > 0.9 and (high_price - low_price) > 1.7:
             reason = "📊 🟢 נר שורי חזק (Bullish Candle)"
-        elif low_price < open_price and (open_price - low_price) > 0.8 and (high_price - low_price) > 1.5:
+        elif low_price < open_price and (open_price - low_price) > 0.9 and (high_price - low_price) > 1.7:
             reason = "📊 🔴 נר דובי חזק (Bearish Candle)"
 
         if reason:
