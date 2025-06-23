@@ -105,7 +105,7 @@ def check_signals():
         if reason is None and quarter in ["רבע 2", "רבע 3"] and big_bull_candle and follow_through and high_price > high_yesterday:
             reason = "🧠📈 פריצה אמיתית לפי תורת הרבעים (לונג)"
         elif reason is None and high_price > high_yesterday:
-        if quarter in ["רבע 1", "רבע 4"] or not big_bull_candle or not follow_through:
+            if quarter in ["רבע 1", "רבע 4"] or not big_bull_candle or not follow_through:
                 reason = "⚠️ מלכודת פריצה שווא לפי תורת הרבעים"
        
         if reason:
